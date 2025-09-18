@@ -21,13 +21,19 @@ class TextFieldAddComment extends HookWidget {
           padding: const EdgeInsets.only(left: 16),
           child: Icon(Icons.chat_bubble, size: 20),
         ),
-        prefixIconConstraints: BoxConstraints(
-          minWidth: 0,
-          minHeight: 0,
-        ), // Tighter layout
+        prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.send, color: Color.fromARGB(255, 0, 48, 87)),
+          onPressed: () {
+            if (controller.text.isNotEmpty) {
+              onSubmit();
+              controller.clear();
+            }
+          },
+        ),
       ),
       onSubmitted: (value) {
         if (value.isNotEmpty) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:social_feed/helpers/controllers/auth.dart';
+import 'package:social_feed/helpers/providers/auth_providers.dart';
+import 'package:social_feed/pages/home.dart';
 import 'package:social_feed/pages/signup.dart';
 import 'package:social_feed/widgets/custom_button.dart';
 import 'package:social_feed/widgets/custom_text_field.dart';
@@ -11,7 +12,6 @@ class Login extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AuthController _authController = AuthController(ref);
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final emailController = useTextEditingController(text: "");
     final passwordController = useTextEditingController(text: "");
@@ -24,6 +24,7 @@ class Login extends HookConsumerWidget {
           style: TextStyle(fontSize: 24, color: Colors.white),
         ),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: EdgeInsets.all(8),
@@ -82,11 +83,28 @@ class Login extends HookConsumerWidget {
                     width: 240,
                     child: CustomButton(
                       text: "Login",
-                      onPress: () {
-                        _authController.login(
-                          emailController.text,
-                          passwordController.text,
-                        );
+                      onPress: () async {
+                        try {
+                          final loggedInUser = await ref.watch(
+                            loginProvider((
+                              email: emailController.text,
+                              password: passwordController.text,
+                            )).future,
+                          );
+                          if (loggedInUser != null) {
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const Home(),
+                              ),
+                              (Route<dynamic> route) => false,
+                            );
+                          }
+                        } catch (error) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(error.toString())),
+                          );
+                        }
                       },
                     ),
                   ),

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -15,12 +17,20 @@ class NameWithImage extends HookWidget {
     return Row(
       children: [
         ClipOval(
-          child: Image.asset(
-            profilePhoto,
-            width: 40,
-            height: 40,
-            fit: BoxFit.cover,
-          ),
+          child:
+              profilePhoto.startsWith("assets/")
+                  ? Image.asset(
+                    profilePhoto,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  )
+                  : Image.file(
+                    File(profilePhoto),
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  ),
         ),
         SizedBox(width: 8),
         Text(

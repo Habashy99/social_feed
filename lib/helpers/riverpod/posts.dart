@@ -2,68 +2,74 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:social_feed/helpers/repository/post_repo.dart';
 import 'package:social_feed/models/post.dart';
 
-final postsRepository = Provider((ref) => PostRepository());
-final postsStateProvider = StateNotifierProvider((ref) => PostsNotifier(ref));
+final postsRepository = Provider<PostRepository>((ref) => PostRepository());
+final postsStateProvider =
+    StateNotifierProvider<PostsNotifier, AsyncValue<List<PostModel>>>(
+      (ref) => PostsNotifier(ref.read(postsRepository)),
+    );
 
-abstract class PostState {}
+class PostsNotifier extends StateNotifier<AsyncValue<List<PostModel>>> {
+  final PostRepository postsRepository;
+  PostsNotifier(this.postsRepository) : super(const AsyncValue.loading());
 
-class SinglePost extends PostState {
-  final PostModel post;
-  SinglePost(this.post);
-}
-
-class PostList extends PostState {
-  final List<PostModel> posts;
-  PostList(this.posts);
-}
-
-class PostsNotifier extends StateNotifier<AsyncValue<PostState?>> {
-  final Ref ref;
-  PostsNotifier(this.ref) : super(const AsyncValue.data(null));
-
-  Future<PostModel?> createPost(
-    String title,
+  Future<PostModel> createPost(
+    String text,
     String? imageUrl,
     String userId,
   ) async {
-    state = const AsyncValue.loading();
     try {
-      final post = await ref
-          .read(postsRepository)
-          .createPost(title, imageUrl, userId);
-      state = AsyncValue.data(SinglePost(post!));
-      return post;
+      final post = await postsRepository.createPost(text, imageUrl, userId);
+      if (post != null) {
+        final currentPosts = state.value ?? [];
+        _updateState(newState: AsyncValue.data([post, ...currentPosts]));
+        return post;
+      }
     } catch (error, stackTrace) {
-      state = AsyncValue.error(error, stackTrace);
+      _updateState(newState: AsyncValue.error(error, stackTrace));
     }
-    return null;
+    throw Exception("create post failed");
   }
 
-  Future<List<PostModel>?> fetchAllPosts() async {
-    state = const AsyncValue.loading();
+  Future<List<PostModel>> fetchAllPosts(String userId) async {
     try {
-      final posts = await ref.read(postsRepository).fetchAllPosts();
-      state = AsyncValue.data(PostList(posts ?? []));
+      final posts = await postsRepository.fetchAllPosts(userId);
+      _updateState(newState: AsyncValue.data(posts));
       return posts;
     } catch (error, stackTrace) {
-      state = AsyncValue.error(error, stackTrace);
+      _updateState(newState: AsyncValue.error(error, stackTrace));
+      return [];
     }
-    return null;
   }
 
-  Future<PostModel?> fetchPostById(String id) async {
-    state = const AsyncValue.loading();
+  Future<List<PostModel>> fetchAllPostsByUserId(String userId) async {
     try {
-      final post = await ref.read(postsRepository).fetchPostById(id);
-      if (post != null) {
-        state = AsyncValue.data(SinglePost(post));
-      } else {
-        state = const AsyncValue.data(null);
-      }
-      return post;
+      final posts = await postsRepository.fetchAllPostsByUserId(userId);
+      _updateState(newState: AsyncValue.data(posts));
+      return posts;
     } catch (error, stackTrace) {
-      state = AsyncValue.error(error, stackTrace);
+      _updateState(newState: AsyncValue.error(error, stackTrace));
+      return [];
     }
-    return null;
+  }
+
+  Future<PostModel?> fetchPostById(String id, String userId) async {
+    try {
+      final post = await postsRepository.fetchPostById(id, userId);
+      if (post != null) {
+        _updateState(newState: AsyncValue.data([post]));
+        return post;
+      } else {
+        return null;
+      }
+    } catch (error, stackTrace) {
+      _updateState(newState: AsyncValue.error(error, stackTrace));
+    }
+    throw Exception("post not found");
+  }
+
+  void _updateState({required AsyncValue<List<PostModel>> newState}) {
+    if (mounted) {
+      state = newState;
+    }
   }
 }

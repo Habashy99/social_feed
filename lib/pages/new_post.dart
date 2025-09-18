@@ -3,7 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:social_feed/helpers/controllers/post.dart';
+import 'package:social_feed/helpers/providers/post_providers.dart';
+import 'package:social_feed/helpers/hive.dart';
+import 'package:social_feed/models/user.dart';
+import 'package:social_feed/pages/home.dart';
+import 'package:social_feed/pages/login.dart';
 import 'package:social_feed/widgets/image_input.dart';
 import 'package:social_feed/widgets/name_with_image.dart';
 
@@ -12,25 +16,39 @@ class NewPost extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final PostsController _postsController = PostsController(ref);
     final selectedImage = useState<File?>(null);
-    final titleController = useTextEditingController(text: "");
+    final textController = useTextEditingController(text: "");
+    final userBox = HiveService.getBox<HiveUserModel>('userbox');
+    final user = userBox.get('user');
+    if (user == null) {
+      return const Login();
+    }
     return Scaffold(
       appBar: AppBar(
-        title: Text('New Post'),
+        title: Text('New Post', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color.fromARGB(255, 0, 48, 87),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
         actions: <Widget>[
           TextButton(
             child: Text(
               "Post",
-              style: TextStyle(fontSize: 18, color: Colors.black),
+              style: TextStyle(fontSize: 18, color: Colors.white),
             ),
             onPressed: () async {
-              _postsController.createPost(
-                titleController.text,
-                selectedImage.value?.path,
-                "1",
+              final post = await ref.watch(
+                createPostProvider((
+                  text: textController.text,
+                  imageUrl: selectedImage.value?.path ?? "",
+                  userId: user.id,
+                )).future,
               );
+              if (post != null) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => Home()),
+                  (route) => true,
+                );
+              }
             },
           ),
         ],
@@ -42,13 +60,13 @@ class NewPost extends HookConsumerWidget {
           Padding(
             padding: const EdgeInsets.all(16),
             child: NameWithImage(
-              profilePhoto: "assets/images/1.jpg",
-              profileName: "Sarah Martin",
+              profilePhoto: user.imageUrl,
+              profileName: user.name,
             ),
           ),
           SizedBox(height: 18),
           TextField(
-            controller: titleController,
+            controller: textController,
             maxLines: 10, // allow it to grow vertically with content
             decoration: InputDecoration(
               hintText: "What's on your mind?",
@@ -58,6 +76,7 @@ class NewPost extends HookConsumerWidget {
           ),
           SizedBox(height: 16),
           ImageInput(
+            selectedImage: selectedImage.value,
             onSelectImage: (image) {
               selectedImage.value = image;
             },

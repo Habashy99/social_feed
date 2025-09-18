@@ -4,20 +4,22 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
-class CommentWithPhoto extends HookWidget {
+class PostWithPhoto extends HookWidget {
   final String profileImage;
   final String profileName;
   final String createdAt;
   final String commentText;
   final String commentPhoto;
+  final String numOfComments;
   final String numOfFavorites;
   final bool doesLoggedUserMarkItAsFavorite;
-  const CommentWithPhoto({
+  const PostWithPhoto({
     required this.profileImage,
     required this.profileName,
     required this.createdAt,
     required this.commentText,
     required this.commentPhoto,
+    required this.numOfComments,
     required this.numOfFavorites,
     required this.doesLoggedUserMarkItAsFavorite,
     super.key,
@@ -107,6 +109,21 @@ class CommentWithPhoto extends HookWidget {
                     ],
                   ),
                   SizedBox(width: 16),
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: () {},
+                        child: Icon(
+                          Icons.chat_bubble_outline_outlined,
+                          size: 20,
+                        ),
+                      ),
+                      SizedBox(width: 5),
+                      Text(numOfComments),
+                    ],
+                  ),
+                  SizedBox(width: 16),
+                  Text("Add a comment... "),
                 ],
               ),
             ],

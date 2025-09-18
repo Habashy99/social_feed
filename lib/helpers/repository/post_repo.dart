@@ -1,31 +1,35 @@
-import 'package:social_feed/helpers/providers/post_api.dart';
+import 'package:social_feed/helpers/apis/post_api.dart';
 import 'package:social_feed/models/post.dart';
 
 class PostRepository {
-  final PostsProvider _postsProvider = PostsProvider();
+  final PostsApis _postsApis = PostsApis();
   final PostMapper _postMapper = PostMapper();
-  Future<List<PostModel>> fetchAllPosts() async {
-    final json = await _postsProvider.getAllPosts();
-    if (json == null) {
-      return [];
-    }
-    return json.map((json) => _postMapper.mapFromJson(json)).toList();
+  Future<List<PostModel>> fetchAllPosts(String userId) async {
+    final json = await _postsApis.getAllPosts(userId);
+    final posts = json.map((json) => _postMapper.mapFromJson(json)).toList();
+    return posts;
+  }
+
+  Future<List<PostModel>> fetchAllPostsByUserId(String userId) async {
+    final json = await _postsApis.getAllPostsByUserId(userId);
+    final posts = json.map((json) => _postMapper.mapFromJson(json)).toList();
+    return posts;
   }
 
   Future<PostModel?> createPost(
-    String title,
+    String text,
     String? imageUrl,
     String userId,
   ) async {
-    final json = await _postsProvider.createPost(title, imageUrl, userId);
+    final json = await _postsApis.createPost(text, imageUrl, userId);
     if (json == null) {
       return null;
     }
     return _postMapper.mapFromJson(json);
   }
 
-  Future<PostModel?> fetchPostById(String id) async {
-    final json = await _postsProvider.getPostById(id);
+  Future<PostModel?> fetchPostById(String id, String userId) async {
+    final json = await _postsApis.getPostById(id, userId);
     if (json == null) {
       return null;
     }

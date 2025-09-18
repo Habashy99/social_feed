@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -5,10 +7,16 @@ class CustomProfileCommentWithPhoto extends HookWidget {
   final String commentOwner;
   final String commentText;
   final String commentPhoto;
+  final String numOfComments;
+  final String numOfFavorites;
+  final bool doesLoggedUserMarkItAsFavorite;
   const CustomProfileCommentWithPhoto({
     required this.commentOwner,
     required this.commentText,
     required this.commentPhoto,
+    required this.numOfComments,
+    required this.numOfFavorites,
+    required this.doesLoggedUserMarkItAsFavorite,
     super.key,
   });
 
@@ -26,9 +34,14 @@ class CustomProfileCommentWithPhoto extends HookWidget {
           SizedBox(height: 8),
           Text(commentText, style: TextStyle(fontSize: 18)),
           SizedBox(height: 8),
+
           ClipRRect(
             borderRadius: BorderRadius.circular(5),
-            child: Image.asset(commentPhoto, fit: BoxFit.cover),
+
+            child:
+                commentPhoto.startsWith("assets/")
+                    ? Image.asset(commentPhoto, fit: BoxFit.cover)
+                    : Image.file(File(commentPhoto), fit: BoxFit.cover),
           ),
           SizedBox(height: 8),
           Row(
@@ -38,10 +51,17 @@ class CustomProfileCommentWithPhoto extends HookWidget {
                   children: [
                     InkWell(
                       onTap: () {},
-                      child: Icon(Icons.favorite_border_outlined, size: 20),
+                      child: Icon(
+                        doesLoggedUserMarkItAsFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border_outlined,
+                        color:
+                            doesLoggedUserMarkItAsFavorite ? Colors.red : null,
+                        size: 20,
+                      ),
                     ),
-                    SizedBox(width: 4),
-                    Text("25"),
+                    SizedBox(width: 5),
+                    Text(numOfFavorites),
                   ],
                 ),
               ),
@@ -53,8 +73,8 @@ class CustomProfileCommentWithPhoto extends HookWidget {
                       onTap: () {},
                       child: Icon(Icons.chat_bubble_outline, size: 20),
                     ),
-                    SizedBox(width: 4),
-                    Text("10"),
+                    SizedBox(width: 5),
+                    Text(numOfComments),
                   ],
                 ),
               ),

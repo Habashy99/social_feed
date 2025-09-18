@@ -2,7 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:social_feed/helpers/controllers/auth.dart';
+import 'package:social_feed/helpers/providers/auth_providers.dart';
+import 'package:social_feed/pages/home.dart';
 import 'package:social_feed/pages/login.dart';
 import 'package:social_feed/widgets/custom_button.dart';
 import 'package:social_feed/widgets/custom_text_field.dart';
@@ -13,7 +14,6 @@ class Signup extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AuthController _authController = AuthController(ref);
     final formKey = useMemoized(GlobalKey<FormState>.new);
     final nameController = useTextEditingController(text: "");
     final emailController = useTextEditingController(text: "");
@@ -28,6 +28,7 @@ class Signup extends HookConsumerWidget {
           style: TextStyle(fontSize: 24, color: Colors.white),
         ),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -83,6 +84,7 @@ class Signup extends HookConsumerWidget {
                     ),
                     SizedBox(height: 16),
                     ImageInput(
+                      selectedImage: selectedImage.value,
                       onSelectImage: (image) {
                         selectedImage.value = image;
                       },
@@ -93,12 +95,27 @@ class Signup extends HookConsumerWidget {
                       child: CustomButton(
                         text: "Signup",
                         onPress: () async {
-                          _authController.signup(
-                            nameController.text,
-                            emailController.text,
-                            passwordController.text,
-                            selectedImage.value,
-                          );
+                          try {
+                            final newUser = await ref.watch(
+                              signupProvider((
+                                email: emailController.text,
+                                name: nameController.text,
+                                password: passwordController.text,
+                                image: selectedImage.value,
+                              )).future,
+                            );
+                            if (newUser != null) {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (context) => Home()),
+                                (Route<dynamic> route) => false,
+                              );
+                            }
+                          } catch (error) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(error.toString())),
+                            );
+                          }
                         },
                       ),
                     ),

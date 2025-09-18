@@ -8,7 +8,7 @@ class HiveUserModel {
   final String id;
 
   @HiveField(1)
-  final String name;
+  String name;
 
   @HiveField(2)
   final String email;
@@ -17,10 +17,13 @@ class HiveUserModel {
   final String password;
 
   @HiveField(4)
-  final String imageUrl;
+  String imageUrl;
 
   @HiveField(5)
-  final String token;
+  final String accessToken;
+
+  @HiveField(6)
+  final String refreshToken;
 
   HiveUserModel({
     required this.id,
@@ -28,17 +31,19 @@ class HiveUserModel {
     required this.email,
     required this.password,
     required this.imageUrl,
-    required this.token,
+    required this.accessToken,
+    required this.refreshToken,
   });
 
   factory HiveUserModel.fromJson(Map<String, dynamic> json) {
     return HiveUserModel(
-      id: json['id'].toString() ?? '',
+      id: json['id'].toString(),
       name: json['name'] ?? '',
       email: json['email'] ?? '',
       password: json['password'] ?? "",
       imageUrl: json['image_url'] ?? '',
-      token: json['token'] ?? '',
+      accessToken: json['accessToken'] ?? '',
+      refreshToken: json['refreshToken'] ?? '',
     );
   }
 
@@ -48,6 +53,7 @@ class HiveUserModel {
     "email": email,
     "password": password,
     "image_url": imageUrl,
-    "token": token,
+    "accessToken": accessToken,
+    "refreshToken": refreshToken,
   };
 }

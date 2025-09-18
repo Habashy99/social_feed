@@ -3,19 +3,21 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
-class CommentWithoutPhoto extends HookWidget {
+class PostWithoutPhoto extends HookWidget {
   final String profilePhoto;
   final String profileName;
   final String createdAt;
   final String commentText;
+  final String numOfComments;
   final String numOfFavorites;
   final bool doesLoggedUserMarkItAsFavorite;
 
-  const CommentWithoutPhoto({
+  const PostWithoutPhoto({
     required this.profilePhoto,
     required this.profileName,
     required this.createdAt,
     required this.commentText,
+    required this.numOfComments,
     required this.numOfFavorites,
     required this.doesLoggedUserMarkItAsFavorite,
     super.key,
@@ -83,6 +85,18 @@ class CommentWithoutPhoto extends HookWidget {
                 ],
               ),
               SizedBox(width: 16),
+              Row(
+                children: [
+                  InkWell(
+                    onTap: () {},
+                    child: Icon(Icons.chat_bubble_outline_outlined, size: 20),
+                  ),
+                  SizedBox(width: 5),
+                  Text(numOfComments),
+                ],
+              ),
+              SizedBox(width: 16),
+              Text("Add a comment... "),
             ],
           ),
         ],

@@ -1,15 +1,37 @@
-import 'package:social_feed/helpers/providers/comment_api.dart';
+import 'package:social_feed/helpers/apis/comment_api.dart';
 import 'package:social_feed/models/comment.dart';
 
 class CommentRepository {
-  final CommentsProvider _commentsProvider = CommentsProvider();
+  final CommentsApis _commentsApis = CommentsApis();
   final CommentsMapper _commentsMapper = CommentsMapper();
   Future<List<CommentModel>> fetchAllComments() async {
-    final json = await _commentsProvider.getAllComments();
+    final json = await _commentsApis.getAllComments();
+    final data = json.map((json) => _commentsMapper.mapFromJson(json)).toList();
+    return data;
+  }
+
+  Future<List<CommentModel>> fetchAllCommentsByUserId(String userId) async {
+    final json = await _commentsApis.getAllCommentsByUserId(userId);
+    final data = json.map((json) => _commentsMapper.mapFromJson(json)).toList();
+    return data;
+  }
+
+  Future<List<CommentModel>> fetchAllCommentsByPostId(
+    String postId,
+    String userId,
+  ) async {
+    final json = await _commentsApis.getAllCommentsByPostId(postId, userId);
+    final data = json.map((json) => _commentsMapper.mapFromJson(json)).toList();
+    return data;
+  }
+
+  Future<CommentModel?> fetchCommentById(String id) async {
+    final json = await _commentsApis.getCommentById(id);
     if (json == null) {
-      return [];
+      return null;
     }
-    return json.map((json) => _commentsMapper.mapFromJson(json)).toList();
+    final data = _commentsMapper.mapFromJson(json);
+    return data;
   }
 
   Future<CommentModel?> createComment(
@@ -18,7 +40,7 @@ class CommentRepository {
     String userId,
     String postId,
   ) async {
-    final json = await _commentsProvider.createComment(
+    final json = await _commentsApis.createComment(
       comment,
       commentPhoto,
       userId,

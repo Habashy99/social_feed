@@ -8,10 +8,11 @@ abstract interface class IAuth {
     String imageUrl,
   );
   Future<Map<String, dynamic>> login(String email, String password);
-  Future<Map<String, dynamic>> getUserById(String id);
+  Future<String> refreshAccessToken(String refreshToken, String userId);
 }
 
-class AuthProvider implements IAuth {
+class AuthApis implements IAuth {
+  final dio = Dio();
   @override
   Future<Map<String, dynamic>> signup(
     String name,
@@ -19,7 +20,6 @@ class AuthProvider implements IAuth {
     String password,
     String imageUrl,
   ) async {
-    final dio = Dio();
     final response = await dio.post(
       'http://10.0.2.2:8050/users/signup',
       data: {
@@ -36,7 +36,6 @@ class AuthProvider implements IAuth {
 
   @override
   Future<Map<String, dynamic>> login(String email, String password) async {
-    final dio = Dio();
     final response = await dio.post(
       'http://10.0.2.2:8050/users/login',
       data: {"email": email, "password": password},
@@ -47,14 +46,13 @@ class AuthProvider implements IAuth {
   }
 
   @override
-  Future<Map<String, dynamic>> getUserById(String id) async {
-    final dio = Dio();
+  Future<String> refreshAccessToken(String refreshToken, String userId) async {
     final response = await dio.post(
-      'http://10.0.2.2:8050/users/getUserById',
-      data: {"id": id},
+      'http://10.0.2.2:8050/users/refreshAccessToken',
+      data: {"refreshToken": refreshToken, "userId": userId},
     );
-    final data = response.data["user"];
-    if (data == null) throw Exception("User not found in response");
+    final data = response.data["newAccessToken"];
+    if (data == null) throw Exception("refresh Access Token failed");
     return data;
   }
 }

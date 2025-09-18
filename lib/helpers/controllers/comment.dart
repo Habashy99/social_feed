@@ -3,18 +3,31 @@ import 'package:social_feed/helpers/riverpod/comments.dart';
 import 'package:social_feed/models/comment.dart';
 
 abstract interface class IComments {
-  void createComment(
+  Future<CommentModel?> createComment(
     String comment,
     String? commentPhoto,
     String userId,
     String postId,
   );
-  void getAllComments();
+  Future<List<CommentModel>> getAllComments();
+  Future<CommentModel?> getCommentById(String id);
+  Future<List<CommentModel>> getAllCommentsByUserId(String userId);
+  Future<List<CommentModel>> getAllCommentsByPostId(
+    String postId,
+    String userId,
+  );
 }
 
+final commentsControllerProvider = Provider.autoDispose(
+  (ref) => CommentsController(
+    commentsNotifier: ref.watch(commentsStateProvider.notifier),
+  ),
+);
+
 class CommentsController implements IComments {
-  final WidgetRef ref;
-  CommentsController(this.ref);
+  final CommentsNotifier _commentsNotifier;
+  CommentsController({required CommentsNotifier commentsNotifier})
+    : _commentsNotifier = commentsNotifier;
   @override
   Future<CommentModel?> createComment(
     String comment,
@@ -24,9 +37,12 @@ class CommentsController implements IComments {
   ) async {
     try {
       final image = commentPhoto ?? "";
-      return await ref
-          .read(commentsStateProvider.notifier)
-          .createComment(comment, image, userId, postId);
+      return await _commentsNotifier.createComment(
+        comment,
+        image,
+        userId,
+        postId,
+      );
     } catch (error) {
       print(error);
     }
@@ -34,12 +50,30 @@ class CommentsController implements IComments {
   }
 
   @override
-  Future<List<CommentModel>?> getAllComments() async {
+  Future<List<CommentModel>> getAllComments() async {
     try {
-      return await ref.read(commentsStateProvider.notifier).fetchAllComments();
+      return await _commentsNotifier.fetchAllComments();
     } catch (error) {
       print(error);
     }
     return [];
+  }
+
+  @override
+  Future<CommentModel?> getCommentById(String id) async {
+    return _commentsNotifier.fetchCommentById(id);
+  }
+
+  @override
+  Future<List<CommentModel>> getAllCommentsByUserId(String userId) async {
+    return _commentsNotifier.fetchAllCommentsByUserId(userId);
+  }
+
+  @override
+  Future<List<CommentModel>> getAllCommentsByPostId(
+    String postId,
+    String userId,
+  ) async {
+    return _commentsNotifier.fetchAllCommentsByPostId(postId, userId);
   }
 }
