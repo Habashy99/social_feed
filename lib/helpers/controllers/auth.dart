@@ -75,7 +75,7 @@ class AuthController implements IAuth {
 
   void _startAutoRefresh() {
     _timer?.cancel();
-    _timer = Timer.periodic(const Duration(minutes: 5), (_) async {
+    _timer = Timer.periodic(const Duration(minutes: 3), (_) async {
       try {
         await checkAccessToken();
       } catch (error) {
